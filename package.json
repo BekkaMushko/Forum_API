@@ -1,0 +1,25 @@
+{
+  "name": "Forum_API",
+  "version": "1.0.0",
+  "description": "Forum API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BekkaMushko/Forum_API.git"
+  },
+  "keywords": [],
+  "author": "BekkaMushko",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mysql2": "^3.14.4",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.6",
+    "multer": "^2.0.0"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "host": "localhost",
+  "user": "BekkaMushko",
+  "password": "securepass",
+  "database": "Forum_API"
+}
