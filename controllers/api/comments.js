@@ -208,7 +208,7 @@ module.exports = {
             && comment.image && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', comment.image))) {
           fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', comment.image));
         }
-        return res.status(201).json({
+        return res.status(200).json({
           status: true,
           data: result
         });
@@ -462,7 +462,7 @@ module.exports = {
           error: 'Like is already created'
         });
       } else {
-        return res.status(200).json({
+        return res.status(201).json({
           status: true,
           data: result
         });
@@ -594,7 +594,7 @@ module.exports = {
           error: 'Internal server error'
         });
       } else {
-        return res.status(201).json({
+        return res.status(200).json({
           status: true,
           data: result
         });

@@ -184,7 +184,7 @@ module.exports = {
           error: 'Internal server error'
         });
       } else {
-        return res.status(201).json({
+        return res.status(200).json({
           status: true,
           data: result
         });

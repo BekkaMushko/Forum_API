@@ -828,7 +828,7 @@ module.exports = {
           error: 'Like is already created'
         });
       } else {
-        return res.status(200).json({
+        return res.status(201).json({
           status: true,
           data: result
         });
