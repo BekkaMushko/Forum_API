@@ -12,12 +12,15 @@ module.exports = class Topic extends Model {
   }
   static table = 'topics';
 
-  async get_categories() {
-    const query = `SELECT categories.* FROM \`categories\` JOIN \`topics_categories\` ON topics_categories.category = categories.id WHERE topics_categories.topic = ?`;
+  async get_categories(obj = {}) {
+    let { limit, offset } = obj;
+    const query = `SELECT categories.* FROM \`categories\` JOIN \`topics_categories\` ON topics_categories.category = categories.id WHERE topics_categories.topic = ?${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const count_query = `SELECT COUNT(*) AS \`count\` FROM \`categories\` JOIN \`topics_categories\` ON topics_categories.category = categories.id WHERE topics_categories.topic = ?`;
     try {
       if (this.data.id && await this.find(this.data.id)) {
-        let result = await pool.query(query, this.data.id);
-        return result[0];
+        let result = await pool.query(query, [this.data.id, limit, offset]);
+        let count = await pool.query(count_query, this.data.id);
+        return { data: result[0], count: count[0][0].count };
       } else {
         return null;
       }

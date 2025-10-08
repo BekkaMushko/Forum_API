@@ -11,7 +11,7 @@ module.exports = class ModelsHelpers {
       if (comments instanceof Array) {
         for (let i of comments) {
           if (i.id) {
-            await ModelsHelpers.delete_comments(await Comment.get_all({ value: i.id, param: 'parent_comment' }));
+            await ModelsHelpers.delete_comments((await Comment.get_all({ value: i.id, param: 'parent_comment' })).data);
             await Like.delete_all(i, 'comment');
             await new Comment(i).delete();
           } else {
@@ -32,7 +32,7 @@ module.exports = class ModelsHelpers {
     try {
       if (post_obj) {
         await Like.delete_all(post_obj, 'post');
-        await ModelsHelpers.delete_comments(await Comment.get_all({ value: post_obj.id, param: 'post' }));
+        await ModelsHelpers.delete_comments((await Comment.get_all({ value: post_obj.id, param: 'post' })).data);
         return await new Post(post_obj).delete();
       } else {
         return null;
@@ -50,8 +50,8 @@ module.exports = class ModelsHelpers {
         for (let i of likes) {
           await new Like(i).delete();
         }
-        await ModelsHelpers.delete_comments(await Comment.get_all({ value: user, param: 'author' }));
-        const posts = await Post.get_all({ value: user, param: 'author' });
+        await ModelsHelpers.delete_comments((await Comment.get_all({ value: user, param: 'author' })).data);
+        const posts = (await Post.get_all({ value: user, param: 'author' })).data;
         for (let i of posts) {
           await ModelsHelpers.delete_post(i);
         }
@@ -87,7 +87,7 @@ module.exports = class ModelsHelpers {
           post_obj.categories.splice(delete_categories_connections[i], 1);
         }
         const result = await new Post(post_obj).save();
-        const comments = await Comment.get_all({ value: post_obj.id, param: 'post' });
+        const comments = (await Comment.get_all({ value: post_obj.id, param: 'post' })).data;
         const changeCommentsTopic = async function(comms) {
           for (let i of comms) {
             let comment_likes = await Like.get_likes(i.id, 'comment');
@@ -95,7 +95,7 @@ module.exports = class ModelsHelpers {
             await comment_author.find(i.author);
             await comment_author.change_rating(i.topic, (comment_likes.dislike || 0) - (comment_likes.like || 0));
             await comment_author.change_rating(topic, (comment_likes.like || 0) - (comment_likes.dislike || 0));
-            await changeCommentsTopic(await Comment.get_all({ value: i.id, param: 'parent_comment' }));
+            await changeCommentsTopic((await Comment.get_all({ value: i.id, param: 'parent_comment' })).data);
             await new Comment(i).save();
           }
         }
@@ -113,7 +113,7 @@ module.exports = class ModelsHelpers {
   static async delete_topic(topic) {
     try {
       if (topic) {
-        const posts = await Post.get_all({ value: topic, param: 'topic' });
+        const posts = (await Post.get_all({ value: topic, param: 'topic' })).data;
         for (let i of posts) {
           await ModelsHelpers.delete_post(i);
         }

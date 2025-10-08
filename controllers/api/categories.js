@@ -35,7 +35,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -85,10 +86,10 @@ module.exports = {
           error: 'Missing parameters'
         });
       }
-      if (typeof title != 'string') {
+      if (typeof title != 'string' || title.length > 30) {
         return res.status(400).json({
           status: false,
-          error: 'Title must be a string'
+          error: 'Title must be a string with maximum 30 characters length'
         });
       }
       if (typeof req.body.description != 'undefined' && typeof req.body.description != 'string') {
@@ -142,10 +143,10 @@ module.exports = {
         });
       }
       if (typeof req.body.title != 'undefined' && req.body.title != category.title) {
-        if (typeof req.body.title != 'string') {
+        if (typeof req.body.title != 'string' || req.body.title.length > 30) {
           return res.status(400).json({
             status: false,
-            error: 'Title must be a string'
+            error: 'Title must be a string with maximum 30 characters length'
           });
         }
         const category_by_title = await new Category().find(req.body.title, 'title');
@@ -341,7 +342,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {

@@ -36,7 +36,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -86,10 +87,10 @@ module.exports = {
           error: 'Missing parameters'
         });
       }
-      if (typeof title != 'string') {
+      if (typeof title != 'string' || title.length > 30) {
         return res.status(400).json({
           status: false,
-          error: 'Title must be a string'
+          error: 'Title must be a string with maximum 30 characters length'
         });
       }
       if (typeof req.body.description != 'undefined' && typeof req.body.description != 'string') {
@@ -143,10 +144,10 @@ module.exports = {
         });
       }
       if (typeof req.body.title != 'undefined' && req.body.title != topic.title) {
-        if (typeof req.body.title != 'string') {
+        if (typeof req.body.title != 'string' || req.body.title.length > 30) {
           return res.status(400).json({
             status: false,
-            error: 'Title must be a string'
+            error: 'Title must be a string with maximum 30 characters length'
           });
         }
         const topic_by_title = await new Topic().find(req.body.title, 'title');
@@ -339,7 +340,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -358,6 +360,13 @@ module.exports = {
         error: "Invalid topic ID value"
       });
     }
+    let { limit, offset } = req.query ? req.query:{};
+    if ((typeof limit != 'undefined' && isNaN(limit)) || (typeof offset != 'undefined' && isNaN(offset))) {
+      return res.status(400).json({
+        status: false,
+        error: 'Invalid query values'
+      });
+    }
     try {
       const topic = new Topic();
       if (!(await topic.find(req.params.topic_id))) {
@@ -366,7 +375,9 @@ module.exports = {
           error: 'Topic is not found'
         });
       }
-      const result = await topic.get_categories();
+      limit = typeof limit != 'undefined' ? Number.parseInt(limit):undefined;
+      offset = typeof offset != 'undefined' ? Number.parseInt(offset):undefined;
+      const result = await topic.get_categories({ limit: limit, offset: offset });
       if (result == null) {
         return res.status(500).json({
           status: false,
@@ -375,7 +386,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {

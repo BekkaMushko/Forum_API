@@ -42,4 +42,4 @@ It will innit the project and install required dependencies (`Express`, `MySQL2`
 npm start
 ```
 
-For beginning, log in as **admin** with email *admin@example.com* and password *1234567890*
+For beginning, log in as **admin** with email *admin@example.com* and password *123QAZwsx*

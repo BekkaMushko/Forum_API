@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS `comments` (
 	`id` integer PRIMARY KEY AUTO_INCREMENT,
 	`author` integer NOT NULL,
 	`publish_date` timestamp DEFAULT CURRENT_TIMESTAMP,
+	`status` enum('active', 'inactive') DEFAULT 'active',
 	`answer` boolean DEFAULT 0,
 	`content` text NOT NULL,
 	`image` text DEFAULT NULL,

@@ -11,6 +11,7 @@ module.exports = class Comment extends Model {
     this.data.id = data.id;
     this.data.author = data.author;
     this.data.publish_date = data.publish_date;
+    this.data.status = data.status;
     this.data.answer = data.answer;
     this.data.content = data.content;
     this.data.image = data.image;

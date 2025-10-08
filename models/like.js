@@ -123,10 +123,10 @@ module.exports = class Like extends Model {
           await this.find(this.data.post || this.data.comment, this.data.post ? 'post':'comment', this.data.author);
           return true;
         } else {
-          return true;
+          return false;
         }
       } else {
-        return false;
+        return null;
       }
     }
     catch (err) {

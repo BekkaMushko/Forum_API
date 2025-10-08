@@ -69,7 +69,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -121,16 +122,17 @@ module.exports = {
           error: 'Missing parameters'
         });
       }
-      if (typeof login != 'string' || /\W/.test(login) || !/\w{3,}/.test(login)) {
+      if (typeof login != 'string' || /\W/.test(login) || !/^\w{3,30}$/.test(login)) {
         return res.status(400).json({
           status: false,
-          error: 'Login must be a string with at least 3 symbols length and can contain only uppercase/lowercase letters and digits'
+          error: 'Login must be a string with 3-30 symbols length and can contain only uppercase/lowercase letters, digits and underscore'
         });
       }
-      if (typeof password != 'string' || /\W/.test(password) || !/\w{6,}/.test(password)) {
+      if (typeof password != 'string' || /\W/.test(password)
+          || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password) || !/\w{6,}/.test(password)) {
         return res.status(400).json({
           status: false,
-          error: 'Password must be a string with at least 6 symbols length and can contain only uppercase/lowercase letters and digits'
+          error: 'Password must be a string with at least 6 symbols length and must contain only and at least one uppercase/lowercase letter and digit'
         });
       }
       if (password != password_confirmation) {
@@ -291,10 +293,10 @@ module.exports = {
         });
       }
       if (typeof req.body.login != 'undefined' && req.user.id == req.params.user_id && req.body.login != user.login) {
-        if (typeof req.body.login != 'string' || /\W/.test(req.body.login) || !/\w{3,}/.test(req.body.login)) {
+        if (typeof req.body.login != 'string' || /\W/.test(req.body.login) || !/^\w{3,30}$/.test(req.body.login)) {
           return res.status(400).json({
             status: false,
-            error: 'Login must be a string at least 3 symbols length and can contain only uppercase/lowercase letters and digits'
+            error: 'Login must be a string at least 30 symbols length and can contain only uppercase/lowercase letters, digits and underscore'
           });
         }
         const user_by_login = await new User().find(req.body.login, 'login');
@@ -450,8 +452,17 @@ module.exports = {
   },
 
   getFollowings: async (req, res) => {
+    let { limit, offset } = req.query ? req.query:{};
+    if ((typeof limit != 'undefined' && isNaN(limit)) || (typeof offset != 'undefined' && isNaN(offset))) {
+      return res.status(400).json({
+        status: false,
+        error: 'Invalid query values'
+      });
+    }
     try {
-      const result = await new User({ id: req.user.id }).get_following_users();
+      limit = typeof limit != 'undefined' ? Number.parseInt(limit):undefined;
+      offset = typeof offset != 'undefined' ? Number.parseInt(offset):undefined;
+      const result = await new User({ id: req.user.id }).get_following_users({ limit: limit, offset: offset });
       if (result === null) {
         return res.status(500).json({
           status: false,
@@ -460,7 +471,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {

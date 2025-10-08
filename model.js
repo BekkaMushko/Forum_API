@@ -36,7 +36,8 @@ module.exports = class Model {
         where += `${param[i] ? '??':'\`id\`'} ${value[i] instanceof Array ? (param[i] == 'publish_date' ? 'BETWEEN ? AND ?':'IN (?)'):`${value[i] === null ? 'IS NULL':'= ?'}`}${param[i] == 'post' && this.table == 'comments' ? ' AND \`parent_comment\` IS NULL':''}`;
       }
     }
-    const query = `SELECT ${this.table}.* FROM \`${this.table}\`${join_table ? ` LEFT JOIN ${join_table}`:''}${typeof value != 'undefined' ? where:''}${group_by_having}${order_by ? ` ORDER BY ${this.table == 'comments' ? '\`answer\` DESC, ':''}${order_by == 'rating' ? 'ratings.likes - ratings.dislikes':'??'} ${asc ? 'ASC':'DESC'}, \`id\` ${order_by == 'publish_date' || order_by == 'rating' || order_by == 'id' ? `${asc ? 'ASC':'DESC'}`:`DESC`}`:''}${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const query = `SELECT ${this.table}.* FROM \`${this.table}\`${join_table ? ` LEFT JOIN ${join_table}`:''}${typeof value != 'undefined' ? where:''}${group_by_having}${order_by ? ` ORDER BY ${this.table == 'comments' ? '\`status\` ASC, ':''}${order_by == 'rating' ? 'ratings.likes - ratings.dislikes':'??'} ${asc ? 'ASC':'DESC'}, \`id\` ${order_by == 'publish_date' || order_by == 'rating' || order_by == 'id' ? `${asc ? 'ASC':'DESC'}`:`DESC`}`:''}${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const count_query = `SELECT COUNT(*) AS \`count\` FROM ${group_by_having != '' ? `(SELECT ${this.table}.* FROM `:''}\`${this.table}\`${join_table ? ` LEFT JOIN ${join_table}`:''}${typeof value != 'undefined' ? where:''}${group_by_having}${group_by_having != '' ? ') AS \`result\`':''}`;
     let values_array = [];
     for (let i = 0; param && i < param.length; ++i) {
       if (param[i]) {
@@ -59,7 +60,8 @@ module.exports = class Model {
     }
     try {
       let result = await pool.query(query, values_array);
-      return result[0];
+      let count = await pool.query(count_query, values_array);
+      return { data: result[0], count: count[0][0].count };
     }
     catch (err) {
       console.error(err);

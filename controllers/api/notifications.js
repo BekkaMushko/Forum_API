@@ -21,7 +21,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -44,7 +45,7 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result.length
+          data: result.count
         });
       }
     } catch(err) {
@@ -69,6 +70,12 @@ module.exports = {
         return res.status(404).json({
           status: false,
           error: 'Notification is not found'
+        });
+      }
+      if (notification.data.seen) {
+        return res.status(400).json({
+          status: false,
+          error: 'Notification is already seen'
         });
       }
       notification.data.seen = true;

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.route('/:comment_id')
   .get(controller.getOne)
-  .patch(FunctionsHelpers.auth_check, FunctionsHelpers.access_check(['author']), (req, res, next) => {
+  .patch(FunctionsHelpers.auth_check, FunctionsHelpers.access_check(['admin', 'author']), (req, res, next) => {
     upload.single('comment_image')(req, res, (err) => {
       return err ? res.status(415).json({ status: false, error: err }) : next();
     });

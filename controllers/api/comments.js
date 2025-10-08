@@ -80,23 +80,13 @@ module.exports = {
           error: 'Parent comment is not found'
         });
       }
-      const post = await new Post().find(parent_comment.post);
-      if (!post) {
-        if (req.file) {
-          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', req.file.filename));
-        }
-        return res.status(404).json({
-          status: false,
-          error: 'Parent post is not found'
-        });
-      }
-      if (post.status == 'inactive') {
+      if (parent_comment.status == 'inactive') {
         if (req.file) {
           fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', req.file.filename));
         }
         return res.status(405).json({
           status: false,
-          error: "Can't comment under inactive post"
+          error: "Can't comment under inactive comment"
         });
       }
       req.body.author = req.user.id;
@@ -105,6 +95,7 @@ module.exports = {
       req.body.parent_comment = parent_comment.id;
       delete req.body.id;
       delete req.body.publish_date;
+      delete req.body.status;
       delete req.body.answer;
       if (!req.file) {
         delete req.body.image;
@@ -159,6 +150,18 @@ module.exports = {
           status: false,
           error: 'Comment is not found'
         });
+      }
+      if (typeof req.body.status != 'undefined' && comment.status != 'inactive'
+          && (typeof req.body.status != 'string' || !['active', 'inactive'].includes(req.body.status))) {
+        if (req.file) {
+          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', req.file.filename));
+        }
+        return res.status(400).json({
+          status: false,
+          error: 'Invalid comment status'
+        });
+      } else if (comment.status == 'inactive' || req.body.status == comment.status) {
+        delete req.body.status;
       }
       if (typeof req.body.content != 'undefined' && typeof req.body.content != 'string') {
         if (req.file) {
@@ -237,7 +240,7 @@ module.exports = {
           error: 'Comment is not found'
         });
       }
-      await ModelsHelpers.delete_comments(await Comment.get_all({ value: comment.data.id, param: 'parent_comment' }));
+      await ModelsHelpers.delete_comments((await Comment.get_all({ value: comment.data.id, param: 'parent_comment' })).data);
       await Like.delete_all(comment.data, 'comment');
       const result = await comment.delete();
       if (result == null) {
@@ -360,7 +363,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {

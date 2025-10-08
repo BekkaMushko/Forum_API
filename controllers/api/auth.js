@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
   register: async (req, res) => {
-    const { login, password, password_confirmation, email } = req.body ? req.body:{};
+    let { login, password, password_confirmation, email } = req.body ? req.body:{};
     try {
       if (typeof login == 'undefined'
           || typeof password == 'undefined' || typeof password_confirmation == 'undefined'
@@ -15,16 +15,17 @@ module.exports = {
           error: 'Missing parameters'
         });
       }
-      if (typeof login != 'string' || /\W/.test(login) || !/\w{3,}/.test(login)) {
+      if (typeof login != 'string' || /\W/.test(login) || !/^\w{3,30}$/.test(login)) {
         return res.status(400).json({
           status: false,
-          error: 'Login must be a string with at least 3 symbols length and can contain only uppercase/lowercase letters and digits'
+          error: 'Login must be a string with 3-30 symbols length and can contain only uppercase/lowercase letters, digits and underscore'
         });
       }
-      if (typeof password != 'string' || /\W/.test(password) || !/\w{6,}/.test(password)) {
+      if (typeof password != 'string' || /\W/.test(password)
+          || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password) || !/\w{6,}/.test(password)) {
         return res.status(400).json({
           status: false,
-          error: 'Password must be a string with at least 6 symbols length and can contain only uppercase/lowercase letters and digits'
+          error: 'Password must be a string with at least 6 symbols length and must contain only and at least one uppercase/lowercase letter and digit'
         });
       }
       if (password != password_confirmation) {
@@ -141,7 +142,7 @@ module.exports = {
       }
       return res.status(200).json({
         status: true,
-        data: { user: user, token: FunctionsHelpers.create_token(user, 'user') }
+        data: { data: user, token: FunctionsHelpers.create_token(user, 'user') }
       });
     } catch(err) {
       console.error(err);
@@ -153,7 +154,7 @@ module.exports = {
   },
 
   logout: async (req, res) => {
-    return res.status(200).json({ status: true, data: req.user.id });
+    return res.status(200).json({ status: true, data: req.user ? req.user.id:null });
   },
 
   send_email_confirm: async (req, res) => {
@@ -186,7 +187,7 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: { user: user }
+          data: { data: user }
         });
       }
     } catch(err) {
@@ -269,7 +270,7 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: { user: user }
+          data: { data: user }
         });
       }
     } catch(err) {
@@ -289,10 +290,11 @@ module.exports = {
         error: 'Missing parameters'
       });
     }
-    if (typeof password != 'string' || /\W/.test(password) || !/\w{6,}/.test(password)) {
+    if (typeof password != 'string' || /\W/.test(password)
+        || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password) || !/\w{6,}/.test(password)) {
       return res.status(400).json({
         status: false,
-        error: 'Password must be a string with at least 6 symbols length and can contain only uppercase/lowercase letters and digits'
+        error: 'Password must be a string with at least 6 symbols length and must contain only and at least one uppercase/lowercase letter and digit'
       });
     }
     let token_data = FunctionsHelpers.user_from_email(req.params.confirm_token);

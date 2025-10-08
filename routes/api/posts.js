@@ -31,6 +31,7 @@ router.route('/:post_id/comments')
     });
   }, controller.createComment);
 router.get('/:post_id/categories', controller.getCategories);
+router.get('/:post_id/answer', controller.getAnswer);
 router.route('/:post_id/like')
   .get(controller.getLikes)
   .post(FunctionsHelpers.auth_check, controller.createLike)

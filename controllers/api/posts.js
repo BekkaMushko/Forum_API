@@ -102,7 +102,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -560,7 +561,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -630,6 +632,7 @@ module.exports = {
       req.body.parent_comment = null;
       delete req.body.id;
       delete req.body.publish_date;
+      delete req.body.status;
       delete req.body.answer;
       if (!req.file) {
         delete req.body.image;
@@ -686,6 +689,48 @@ module.exports = {
         return res.status(200).json({
           status: true,
           data: result
+        });
+      }
+    } catch(err) {
+      console.error(err);
+      return res.status(500).json({
+        status: false,
+        error: err
+      });
+    }
+  },
+
+  getAnswer: async (req, res) => {
+    if (isNaN(req.params.post_id)) {
+      return res.status(400).json({
+        status: false,
+        error: "Invalid post ID value"
+      });
+    }
+    try {
+      const post = await new Post().find(req.params.post_id);
+      if (!post) {
+        return res.status(404).json({
+          status: false,
+          error: 'Post is not found'
+        });
+      }
+      if (post.type == 'post') {
+        return res.status(400).json({
+          status: false,
+          error: 'No answer for not question'
+        });
+      }
+      const result = await Comment.get_all({ value: [post.id, true], param: ['post', 'answer'] });
+      if (result == null) {
+        return res.status(500).json({
+          status: false,
+          error: 'Internal server error'
+        });
+      } else {
+        return res.status(200).json({
+          status: true,
+          data: result.data[0]
         });
       }
     } catch(err) {
@@ -839,8 +884,17 @@ module.exports = {
   },
 
   getFavorites: async (req, res) => {
+    let { limit, offset } = req.query ? req.query:{};
+    if ((typeof limit != 'undefined' && isNaN(limit)) || (typeof offset != 'undefined' && isNaN(offset))) {
+      return res.status(400).json({
+        status: false,
+        error: 'Invalid query values'
+      });
+    }
     try {
-      const result = await new User({ id: req.user.id }).get_favorite();
+      limit = typeof limit != 'undefined' ? Number.parseInt(limit):undefined;
+      offset = typeof offset != 'undefined' ? Number.parseInt(offset):undefined;
+      const result = await new User({ id: req.user.id }).get_favorite({ limit: limit, offset: offset });
       if (result === null) {
         return res.status(500).json({
           status: false,
@@ -849,7 +903,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -944,8 +999,17 @@ module.exports = {
   },
 
   getFollowings: async (req, res) => {
+    let { limit, offset } = req.query ? req.query:{};
+    if ((typeof limit != 'undefined' && isNaN(limit)) || (typeof offset != 'undefined' && isNaN(offset))) {
+      return res.status(400).json({
+        status: false,
+        error: 'Invalid query values'
+      });
+    }
     try {
-      const result = await new User({ id: req.user.id }).get_following_posts();
+      limit = typeof limit != 'undefined' ? Number.parseInt(limit):undefined;
+      offset = typeof offset != 'undefined' ? Number.parseInt(offset):undefined;
+      const result = await new User({ id: req.user.id }).get_following_posts({ limit: limit, offset: offset });
       if (result === null) {
         return res.status(500).json({
           status: false,
@@ -954,7 +1018,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {
@@ -1086,7 +1151,8 @@ module.exports = {
       } else {
         return res.status(200).json({
           status: true,
-          data: result
+          data: result.data,
+          count: result.count
         });
       }
     } catch(err) {

@@ -54,12 +54,15 @@ module.exports = class User extends Model {
     }
   }
 
-  async get_favorite() {
-    const query = `SELECT posts.* FROM \`posts\` JOIN \`favorite_posts\` ON posts.id = favorite_posts.post WHERE favorite_posts.user = ?`;
+  async get_favorite(obj = {}) {
+    let { limit, offset } = obj;
+    const query = `SELECT posts.* FROM \`posts\` JOIN \`favorite_posts\` ON posts.id = favorite_posts.post WHERE favorite_posts.user = ?${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const count_query = `SELECT COUNT(*) AS \`count\` FROM \`posts\` JOIN \`favorite_posts\` ON posts.id = favorite_posts.post WHERE favorite_posts.user = ?`;
     try {
       if (this.data.id && await this.find(this.data.id)) {
-        let result = await pool.query(query, this.data.id);
-        return result[0];
+        let result = await pool.query(query, [this.data.id, limit, offset]);
+        let count = await pool.query(count_query, this.data.id);
+        return { data: result[0], count: count[0][0].count };
       } else {
         return null;
       }
@@ -104,12 +107,15 @@ module.exports = class User extends Model {
     }
   }
 
-  async get_following_posts() {
-    const query = `SELECT posts.* FROM \`posts\` JOIN \`followings_posts\` ON posts.id = followings_posts.post WHERE followings_posts.user = ?`;
+  async get_following_posts(obj = {}) {
+    let { limit, offset } = obj;
+    const query = `SELECT posts.* FROM \`posts\` JOIN \`followings_posts\` ON posts.id = followings_posts.post WHERE followings_posts.user = ?${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const count_query = `SELECT COUNT(*) AS \`count\` FROM \`posts\` JOIN \`followings_posts\` ON posts.id = followings_posts.post WHERE followings_posts.user = ?`;
     try {
       if (this.data.id && await this.find(this.data.id)) {
-        let result = await pool.query(query, this.data.id);
-        return result[0];
+        let result = await pool.query(query, [this.data.id, limit, offset]);
+        let count = await pool.query(count_query, this.data.id);
+        return { data: result[0], count: count[0][0].count };
       } else {
         return null;
       }
@@ -154,12 +160,15 @@ module.exports = class User extends Model {
     }
   }
 
-  async get_following_users() {
-    const query = `SELECT users.* FROM \`users\` JOIN \`followings_users\` ON users.id = followings_users.user WHERE followings_users.following_user = ?`;
+  async get_following_users(obj = {}) {
+    let { limit, offset } = obj;
+    const query = `SELECT users.* FROM \`users\` JOIN \`followings_users\` ON users.id = followings_users.user WHERE followings_users.following_user = ?${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const count_query = `SELECT COUNT(*) AS \`count\` FROM \`users\` JOIN \`followings_users\` ON users.id = followings_users.user WHERE followings_users.following_user = ?`;
     try {
       if (this.data.id && await this.find(this.data.id)) {
-        let result = await pool.query(query, this.data.id);
-        return result[0];
+        let result = await pool.query(query, [this.data.id, limit, offset]);
+        let count = await pool.query(count_query, this.data.id);
+        return { data: result[0], count: count[0][0].count };
       } else {
         return null;
       }
@@ -236,7 +245,7 @@ module.exports = class User extends Model {
       }
       const result = await super.save();
       if (result && initialiseTopics) {
-        const topics = (await Topic.get_all()).map(res => res.id);
+        const topics = (await Topic.get_all()).data.map(res => res.id);
         for (let i of topics) {
           await pool.query(`INSERT INTO \`users_ratings\` (\`user\`, \`topic\`) VALUES (?, ?)`, [this.data.id, i]);
         }

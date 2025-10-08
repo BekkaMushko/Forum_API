@@ -25,7 +25,8 @@ module.exports = class Post extends Model {
     for (let i of words) {
       words_query += (words_query != '' ? ' AND ':'') + `\`title\` LIKE "%${i}%"`;
     }
-    const query = `SELECT ${this.table}.* FROM ${this.table} LEFT JOIN (SELECT \`post\`, CASE WHEN \`type\` = 'like' THEN \`count\` ELSE 0 END AS \`likes\`, CASE WHEN \`type\` = 'dislike' THEN \`count\` ELSE 0 END AS \`dislikes\` FROM (SELECT \`post\`, \`type\`, COUNT(\`type\`) AS \`count\` FROM (SELECT likes.type AS \`type\`, posts.id AS \`post\` FROM \`likes\` RIGHT JOIN \`posts\` ON likes.post = posts.id) AS \`likes\` GROUP BY \`post\`, \`type\`) AS \`counts\`) AS \`ratings\` ON posts.id = ratings.post WHERE ${words_query} ORDER BY ratings.likes - ratings.dislikes${typeof limit != 'undefined' ? ' LIMIT ?':''}${typeof offset != 'undefined' ? ' OFFSET ?':''}`;
+    const query = `SELECT ${this.table}.* FROM ${this.table} LEFT JOIN (SELECT \`post\`, CASE WHEN \`type\` = 'like' THEN \`count\` ELSE 0 END AS \`likes\`, CASE WHEN \`type\` = 'dislike' THEN \`count\` ELSE 0 END AS \`dislikes\` FROM (SELECT \`post\`, \`type\`, COUNT(\`type\`) AS \`count\` FROM (SELECT likes.type AS \`type\`, posts.id AS \`post\` FROM \`likes\` RIGHT JOIN \`posts\` ON likes.post = posts.id) AS \`likes\` GROUP BY \`post\`, \`type\`) AS \`counts\`) AS \`ratings\` ON posts.id = ratings.post WHERE ${words_query} ORDER BY ratings.likes - ratings.dislikes${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const count_query = `SELECT COUNT(*) AS \`count\` FROM ${this.table} LEFT JOIN (SELECT \`post\`, CASE WHEN \`type\` = 'like' THEN \`count\` ELSE 0 END AS \`likes\`, CASE WHEN \`type\` = 'dislike' THEN \`count\` ELSE 0 END AS \`dislikes\` FROM (SELECT \`post\`, \`type\`, COUNT(\`type\`) AS \`count\` FROM (SELECT likes.type AS \`type\`, posts.id AS \`post\` FROM \`likes\` RIGHT JOIN \`posts\` ON likes.post = posts.id) AS \`likes\` GROUP BY \`post\`, \`type\`) AS \`counts\`) AS \`ratings\` ON posts.id = ratings.post WHERE ${words_query} ORDER BY ratings.likes - ratings.dislikes`;
     let values_array = [];
     if (typeof limit != 'undefined') {
       values_array.push(limit);
@@ -35,7 +36,8 @@ module.exports = class Post extends Model {
     }
     try {
       let result = await pool.query(query, values_array);
-      return result[0];
+      let count = await pool.query(count_query);
+      return { data: result[0], count: count[0][0].count };
     }
     catch (err) {
       console.error(err);

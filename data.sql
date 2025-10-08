@@ -42,11 +42,11 @@ INSERT INTO `topics_categories` (`category`, `topic`) VALUES
     ((SELECT `id` FROM `categories` WHERE `title` = 'Category without description'), (SELECT `id` FROM `topics` WHERE `title` = 'Test topic'));
 
 INSERT INTO `users` (`login`, `password`, `full_name`, `email`, `email_confirmed`, `description`, `role`) VALUES
-    ('admin', 'YnE0WVZBSzgwUXhXeUlPMDRETTZ2QT09', NULL, 'admin@example.com', 1, NULL, 'admin'),
-    ('user1', 'YnE0WVZBSzgwUXhXeUlPMDRETTZ2QT09', NULL, 'user1@example.com', 1, NULL, 'user'),
-    ('user2', 'YnE0WVZBSzgwUXhXeUlPMDRETTZ2QT09', NULL, 'user2@example.com', 1, NULL, 'user'),
-    ('GoodUser', 'YnE0WVZBSzgwUXhXeUlPMDRETTZ2QT09', 'Good user', 'gooduser@example.com', 1, NULL, 'admin'),
-    ('BadUser', 'YnE0WVZBSzgwUXhXeUlPMDRETTZ2QT09', 'Bad user', 'baduser@example.com', 1, 'Dislike everything', 'user');
+    ('admin', 'S2NFd1VZWURBYUpPVSs1OFJ0WG9Wdz09', NULL, 'admin@example.com', 1, NULL, 'admin'),
+    ('user1', 'S2NFd1VZWURBYUpPVSs1OFJ0WG9Wdz09', NULL, 'user1@example.com', 1, NULL, 'user'),
+    ('user2', 'S2NFd1VZWURBYUpPVSs1OFJ0WG9Wdz09', NULL, 'user2@example.com', 1, NULL, 'user'),
+    ('GoodUser', 'S2NFd1VZWURBYUpPVSs1OFJ0WG9Wdz09', 'Good user', 'gooduser@example.com', 1, NULL, 'admin'),
+    ('BadUser', 'S2NFd1VZWURBYUpPVSs1OFJ0WG9Wdz09', 'Bad user', 'baduser@example.com', 1, 'Dislike everything', 'user');
 
 INSERT INTO `posts` (`author`, `title`, `type`, `status`, `content`, `topic`) VALUES
     ((SELECT `id` FROM `users` WHERE `login` = 'user1'), 'first post', 'post', 'active', 'This is my first post', (SELECT `id` FROM `topics` WHERE `title` = 'Topic1')),
