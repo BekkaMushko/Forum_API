@@ -84,8 +84,8 @@ INSERT INTO `likes` (`author`, `post`, `comment`, `type`) VALUES
     ((SELECT `id` FROM `users` WHERE `login` = 'BadUser'), (SELECT `id` FROM `posts` WHERE `title` = 'good post'), NULL, 'dislike');
 
 INSERT INTO `notifications` (`user`, `type`, `seen`, `notification_post`, `notification_comment`) VALUES
-    ((SELECT `id` FROM `users` WHERE `login` = 'GoodUser'), 'following_publication', 1, (SELECT `id` FROM `posts` WHERE `title` = 'first question'), NULL),
-    ((SELECT `id` FROM `users` WHERE `login` = 'GoodUser'), 'following_publication', 1, (SELECT `id` FROM `posts` WHERE `title` = 'good question'), NULL),
+    ((SELECT `id` FROM `users` WHERE `login` = 'GoodUser'), 'following_publication', 1, (SELECT `id` FROM `posts` WHERE `title` = 'first post'), NULL),
+    ((SELECT `id` FROM `users` WHERE `login` = 'GoodUser'), 'following_publication', 1, (SELECT `id` FROM `posts` WHERE `title` = 'good post'), NULL),
     ((SELECT `id` FROM `users` WHERE `login` = 'user1'), 'new_comment', 1, NULL, (SELECT `id` FROM `comments` WHERE `content` = 'first comment')),
     ((SELECT `id` FROM `users` WHERE `login` = 'BadUser'), 'following_comment', 0, NULL, (SELECT `id` FROM `comments` WHERE `content` = 'first comment')),
     ((SELECT `id` FROM `users` WHERE `login` = 'user2'), 'new_comment', 0, NULL, (SELECT `id` FROM `comments` WHERE `content` = 'comment to comment')),

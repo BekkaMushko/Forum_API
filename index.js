@@ -1,22 +1,25 @@
 const express = require('express');
 const db = require('./db');
+const path = require('path');
+const cors = require('cors');
 
-const api_auth_router = require('./routes/api/auth');
-const api_users_router = require('./routes/api/users');
-const api_posts_router = require('./routes/api/posts');
-const api_comments_router = require('./routes/api/comments');
-const api_topics_router = require('./routes/api/topics');
-const api_categories_router = require('./routes/api/categories');
-const api_notifications_router = require('./routes/api/notifications');
+const api_auth_router = require('./routes/auth');
+const api_users_router = require('./routes/users');
+const api_posts_router = require('./routes/posts');
+const api_comments_router = require('./routes/comments');
+const api_topics_router = require('./routes/topics');
+const api_categories_router = require('./routes/categories');
+const api_notifications_router = require('./routes/notifications');
 
 const app = express();
 
 const hostname = 'localhost';
 const port = 3000;
 
-app.use('/public', express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(cors({ credentials: true, origin: '*' }));
 
 app.use('/api/auth', api_auth_router);
 app.use('/api/users', api_users_router);
@@ -37,7 +40,7 @@ db.connect((err) => {
     console.error(err);
   } else {
     app.listen(port, () => {
-      console.log(`Server running at http://${hostname}:${port}`);
+      console.log(`API server running at http://${hostname}:${port}`);
     });
   }
 });
