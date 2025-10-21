@@ -35,8 +35,8 @@ module.exports = class Comment extends Model {
           await parent_post.save();
         }
         if (this.data.image
-            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image))) {
-          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image));
+            && fs.existsSync(path.join(__dirname, '..', 'public', 'images', this.data.image))) {
+          fs.rmSync(path.join(__dirname, '..', 'public', 'images', this.data.image));
         }
         return await super.delete();
       } else {

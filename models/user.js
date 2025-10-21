@@ -260,8 +260,8 @@ module.exports = class User extends Model {
         await pool.query(`DELETE FROM \`followings_users\` WHERE \`user\` = ? OR \`following_user\` = ?`, [this.data.id, this.data.id]);
         await pool.query(`DELETE FROM \`notifications\` WHERE \`user\` = ?`, this.data.id);
         if (this.data.profile_picture
-            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.profile_picture))) {
-          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.profile_picture));
+            && fs.existsSync(path.join(__dirname, '..', 'public', 'images', this.data.profile_picture))) {
+          fs.rmSync(path.join(__dirname, '..', 'public', 'images', this.data.profile_picture));
         }
         return await super.delete();
       } else {

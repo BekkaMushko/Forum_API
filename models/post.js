@@ -86,8 +86,8 @@ module.exports = class Post extends Model {
         await pool.query(`DELETE FROM \`followings_posts\` WHERE \`post\` = ?`, this.data.id);
         await pool.query(`DELETE FROM \`notifications\` WHERE \`notification_post\` = ?`, this.data.id);
         if (this.data.image
-            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image))) {
-          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image));
+            && fs.existsSync(path.join(__dirname, '..', 'public', 'images', this.data.image))) {
+          fs.rmSync(path.join(__dirname, '..', 'public', 'images', this.data.image));
         }
         return await super.delete();
       } else {

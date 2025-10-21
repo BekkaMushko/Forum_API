@@ -5,7 +5,7 @@ const fs = require('fs');
 module.exports = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const src_dir = path.join(__dirname, '..', '..', 'public', 'images');
+      const src_dir = path.join(__dirname, '..', 'public', 'images');
       if (!fs.existsSync(src_dir)) {
         fs.mkdirSync(src_dir, { recursive: true });
       }

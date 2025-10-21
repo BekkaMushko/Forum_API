@@ -134,7 +134,7 @@ module.exports = class FunctionsHelpers {
         from: '"prezchyk" <polinarezchik@ukr.net>',
         to: email,
         subject: type == 'password' ? 'Password reset':'Email confirmation',
-        html: `<h3>Hello ${login}!</h3><p>Here's your link to ${type == 'password' ? 'reset password':'confirm email'}: <strong>http://localhost:3000/${type == 'password' ? 'password-reset':'email-confirmation'}/${token}</strong></p><p>This link is valid for 30 minutes.</p>`
+        html: `<h3>Hello ${login}!</h3><p>Here's your link to ${type == 'password' ? 'reset password':'confirm email'}: <strong>http://localhost:3000/api/auth/${type == 'password' ? 'password-reset':'email-confirmation'}/${token}</strong></p><p>This link is valid for 30 minutes.</p>`
       });
       return true;
     } catch(err) {
