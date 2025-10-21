@@ -34,12 +34,12 @@ module.exports = class FunctionsHelpers {
           if (!user) {
             return res.status(404).json({
               status: false,
-              message: 'Current user is not found'
+              error: 'Current user is not found'
             });
           } else if (!user.email_confirmed) {
             return res.status(401).json({
               status: false,
-              message: 'Email is not confirmed'
+              error: 'Email is not confirmed'
             });
           }
           req.user = user;
@@ -47,20 +47,20 @@ module.exports = class FunctionsHelpers {
         } else {
           return res.status(401).json({
             status: false,
-            message: 'Invalid token'
+            error: 'Invalid token'
           });
         }
       } else {
         return res.status(401).json({
           status: false,
-          message: 'Unauthorized'
+          error: 'Unauthorized'
         });
       }
     } catch(err) {
       if (err.name == 'TokenExpiredError') {
         return res.status(401).json({
           status: false,
-          message: 'Invalid token'
+          error: 'Invalid token'
         });
       } else {
         console.error(err);
@@ -81,20 +81,20 @@ module.exports = class FunctionsHelpers {
         } else {
           return {
             status: false,
-            message: 'Invalid token'
+            error: 'Invalid token'
           };
         }
       } else {
         return {
           status: false,
-          message: 'Unauthorized'
+          error: 'Unauthorized'
         };
       }
     } catch(err) {
       if (err.name == 'TokenExpiredError') {
         return {
           status: false,
-          message: 'Invalid token'
+          error: 'Invalid token'
         };
       } else {
         console.error(err);
@@ -120,7 +120,7 @@ module.exports = class FunctionsHelpers {
           || (roles.includes('me') && req.user.id == req.params.user_id))) {
         return res.status(403).json({
           success: false,
-          message: 'Forbidden'
+          error: 'Forbidden'
         });
       } else {
         next();
@@ -134,7 +134,7 @@ module.exports = class FunctionsHelpers {
         from: '"prezchyk" <polinarezchik@ukr.net>',
         to: email,
         subject: type == 'password' ? 'Password reset':'Email confirmation',
-        html: `<h3>Hello ${login}!</h3><p>Here's your link to ${type == 'password' ? 'reset password':'confirm email'}: <strong>http://localhost:3000/api/auth/${type == 'password' ? 'password-reset':'email-confirmation'}/${token}</strong></p><p>This link is valid for 30 minutes.</p>`
+        html: `<h3>Hello ${login}!</h3><p>Here's your link to ${type == 'password' ? 'reset password':'confirm email'}: <strong>http://localhost:3000/${type == 'password' ? 'password-reset':'email-confirmation'}/${token}</strong></p><p>This link is valid for 30 minutes.</p>`
       });
       return true;
     } catch(err) {

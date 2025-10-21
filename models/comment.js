@@ -3,6 +3,8 @@ const User = require('./user');
 const Post = require('./post');
 const Notification = require('./notification');
 const pool = require('../db').promise();
+const path = require('path');
+const fs = require('fs');
 
 module.exports = class Comment extends Model {
   constructor(data = {}) {
@@ -32,9 +34,9 @@ module.exports = class Comment extends Model {
           parent_post.data.status = 'active';
           await parent_post.save();
         }
-        if (this.image
-            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.image))) {
-          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.image));
+        if (this.data.image
+            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image))) {
+          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image));
         }
         return await super.delete();
       } else {

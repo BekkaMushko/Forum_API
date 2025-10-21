@@ -62,7 +62,7 @@ module.exports = class Like extends Model {
           Object.assign(this.data, result[0][0]);
           return result[0][0];
         } else {
-          return null;
+          return false;
         }
       } else {
         return null;

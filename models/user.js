@@ -1,6 +1,8 @@
 const Model = require('../model');
 const Topic = require('./topic');
 const pool = require('../db').promise();
+const path = require('path');
+const fs = require('fs');
 
 module.exports = class User extends Model {
   constructor(data = {}) {
@@ -73,11 +75,24 @@ module.exports = class User extends Model {
     }
   }
 
+  async is_post_favorite(post) {
+    const query = `SELECT * FROM \`favorite_posts\` WHERE \`user\` = ? && \`post\` = ?`;
+    try {
+      return this.data.id && await this.find(this.data.id)
+             && (await pool.query(query, [this.data.id, post]))[0].length > 0
+             ? true
+             : false;
+    }
+    catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+
   async add_to_favorite(post) {
     const query = `INSERT INTO \`favorite_posts\` (\`user\`, \`post\`) VALUES (?, ?)`;
     try {
-      if (this.data.id && await this.find(this.data.id)
-          && (await pool.query(`SELECT * FROM \`favorite_posts\` WHERE \`user\` = ? && \`post\` = ?`, [this.data.id, post]))[0].length == 0) {
+      if (this.data.id && await this.find(this.data.id) && !(await this.is_post_favorite(post))) {
         await pool.query(query, [this.data.id, post]);
         return true;
       } else {
@@ -93,8 +108,7 @@ module.exports = class User extends Model {
   async remove_from_favorite(post) {
     const query = `DELETE FROM \`favorite_posts\` WHERE \`user\` = ? AND \`post\` = ?`;
     try {
-      if (this.data.id && await this.find(this.data.id)
-          && (await pool.query(`SELECT * FROM \`favorite_posts\` WHERE \`user\` = ? && \`post\` = ?`, [this.data.id, post]))[0].length > 0) {
+      if (this.data.id && await this.find(this.data.id) && (await this.is_post_favorite(post))) {
         await pool.query(query, [this.data.id, post]);
         return true;
       } else {
@@ -126,11 +140,24 @@ module.exports = class User extends Model {
     }
   }
 
+  async is_post_followed(post) {
+    const query = `SELECT * FROM \`followings_posts\` WHERE \`user\` = ? && \`post\` = ?`;
+    try {
+      return this.data.id && await this.find(this.data.id)
+             && (await pool.query(query, [this.data.id, post]))[0].length > 0
+             ? true
+             : false;
+    }
+    catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+
   async follow_post(post) {
     const query = `INSERT INTO \`followings_posts\` (\`user\`, \`post\`) VALUES (?, ?)`;
     try {
-      if (this.data.id && await this.find(this.data.id)
-          && (await pool.query(`SELECT * FROM \`followings_posts\` WHERE \`user\` = ? && \`post\` = ?`, [this.data.id, post]))[0].length == 0) {
+      if (this.data.id && await this.find(this.data.id) && !(await this.is_post_followed(post))) {
         await pool.query(query, [this.data.id, post]);
         return true;
       } else {
@@ -146,8 +173,7 @@ module.exports = class User extends Model {
   async unfollow_post(post) {
     const query = `DELETE FROM \`followings_posts\` WHERE \`user\` = ? AND \`post\` = ?`;
     try {
-      if (this.data.id && await this.find(this.data.id)
-          && (await pool.query(`SELECT * FROM \`followings_posts\` WHERE \`user\` = ? && \`post\` = ?`, [this.data.id, post]))[0].length > 0) {
+      if (this.data.id && await this.find(this.data.id) && (await this.is_post_followed(post))) {
         await pool.query(query, [this.data.id, post]);
         return true;
       } else {
@@ -179,11 +205,24 @@ module.exports = class User extends Model {
     }
   }
 
+  async is_user_followed(user) {
+    const query = `SELECT * FROM \`followings_users\` WHERE \`user\` = ? && \`following_user\` = ?`;
+    try {
+      return this.data.id && await this.find(this.data.id)
+             && (await pool.query(query, [user, this.data.id]))[0].length > 0
+             ? true
+             : false;
+    }
+    catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+
   async follow_user(user) {
     const query = `INSERT INTO \`followings_users\` (\`user\`, \`following_user\`) VALUES (?, ?)`;
     try {
-      if (this.data.id && await this.find(this.data.id)
-          && (await pool.query(`SELECT * FROM \`followings_users\` WHERE \`user\` = ? && \`following_user\` = ?`, [user, this.data.id]))[0].length == 0) {
+      if (this.data.id && await this.find(this.data.id) && !(await this.is_user_followed(user))) {
         await pool.query(query, [user, this.data.id]);
         return true;
       } else {
@@ -199,8 +238,7 @@ module.exports = class User extends Model {
   async unfollow_user(user) {
     const query = `DELETE FROM \`followings_users\` WHERE \`user\` = ? AND \`following_user\` = ?`;
     try {
-      if (this.data.id && await this.find(this.data.id)
-          && (await pool.query(`SELECT * FROM \`followings_users\` WHERE \`user\` = ? && \`following_user\` = ?`, [user, this.data.id]))[0].length > 0) {
+      if (this.data.id && await this.find(this.data.id) && (await this.is_user_followed(user))) {
         await pool.query(query, [user, this.data.id]);
         return true;
       } else {
@@ -221,9 +259,9 @@ module.exports = class User extends Model {
         await pool.query(`DELETE FROM \`followings_posts\` WHERE \`user\` = ?`, this.data.id);
         await pool.query(`DELETE FROM \`followings_users\` WHERE \`user\` = ? OR \`following_user\` = ?`, [this.data.id, this.data.id]);
         await pool.query(`DELETE FROM \`notifications\` WHERE \`user\` = ?`, this.data.id);
-        if (this.profile_picture
-            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.profile_picture))) {
-          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.profile_picture));
+        if (this.data.profile_picture
+            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.profile_picture))) {
+          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.profile_picture));
         }
         return await super.delete();
       } else {

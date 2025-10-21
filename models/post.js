@@ -1,6 +1,8 @@
 const Model = require('../model');
 const Notification = require('./notification');
 const pool = require('../db').promise();
+const path = require('path');
+const fs = require('fs');
 
 module.exports = class Post extends Model {
   constructor(data = {}) {
@@ -25,7 +27,7 @@ module.exports = class Post extends Model {
     for (let i of words) {
       words_query += (words_query != '' ? ' AND ':'') + `\`title\` LIKE "%${i}%"`;
     }
-    const query = `SELECT ${this.table}.* FROM ${this.table} LEFT JOIN (SELECT \`post\`, CASE WHEN \`type\` = 'like' THEN \`count\` ELSE 0 END AS \`likes\`, CASE WHEN \`type\` = 'dislike' THEN \`count\` ELSE 0 END AS \`dislikes\` FROM (SELECT \`post\`, \`type\`, COUNT(\`type\`) AS \`count\` FROM (SELECT likes.type AS \`type\`, posts.id AS \`post\` FROM \`likes\` RIGHT JOIN \`posts\` ON likes.post = posts.id) AS \`likes\` GROUP BY \`post\`, \`type\`) AS \`counts\`) AS \`ratings\` ON posts.id = ratings.post WHERE ${words_query} ORDER BY ratings.likes - ratings.dislikes${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
+    const query = `SELECT ${this.table}.* FROM ${this.table} LEFT JOIN (SELECT \`post\`, MAX(\`likes\`) AS \`likes\`, MAX(\`dislikes\`) AS \`dislikes\` FROM (SELECT \`post\`, CASE WHEN \`type\` = 'like' THEN \`count\` ELSE 0 END AS \`likes\`, CASE WHEN \`type\` = 'dislike' THEN \`count\` ELSE 0 END AS \`dislikes\` FROM (SELECT \`post\`, \`type\`, COUNT(\`type\`) AS \`count\` FROM (SELECT likes.type AS \`type\`, posts.id AS \`post\` FROM \`likes\` RIGHT JOIN \`posts\` ON likes.post = posts.id) AS \`likes\` GROUP BY \`post\`, \`type\`) AS \`counts\`) AS \`ratings_separated\` GROUP BY \`post\`) AS \`ratings\` ON posts.id = ratings.post WHERE ${words_query} ORDER BY ratings.likes - ratings.dislikes DESC${typeof limit != 'undefined' ? ` LIMIT ?${typeof offset != 'undefined' ? ' OFFSET ?':''}`:''}`;
     const count_query = `SELECT COUNT(*) AS \`count\` FROM ${this.table} LEFT JOIN (SELECT \`post\`, CASE WHEN \`type\` = 'like' THEN \`count\` ELSE 0 END AS \`likes\`, CASE WHEN \`type\` = 'dislike' THEN \`count\` ELSE 0 END AS \`dislikes\` FROM (SELECT \`post\`, \`type\`, COUNT(\`type\`) AS \`count\` FROM (SELECT likes.type AS \`type\`, posts.id AS \`post\` FROM \`likes\` RIGHT JOIN \`posts\` ON likes.post = posts.id) AS \`likes\` GROUP BY \`post\`, \`type\`) AS \`counts\`) AS \`ratings\` ON posts.id = ratings.post WHERE ${words_query} ORDER BY ratings.likes - ratings.dislikes`;
     let values_array = [];
     if (typeof limit != 'undefined') {
@@ -83,9 +85,9 @@ module.exports = class Post extends Model {
         await pool.query(`DELETE FROM \`favorite_posts\` WHERE \`post\` = ?`, this.data.id);
         await pool.query(`DELETE FROM \`followings_posts\` WHERE \`post\` = ?`, this.data.id);
         await pool.query(`DELETE FROM \`notifications\` WHERE \`notification_post\` = ?`, this.data.id);
-        if (this.image
-            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.image))) {
-          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.image));
+        if (this.data.image
+            && fs.existsSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image))) {
+          fs.rmSync(path.join(__dirname, '..', '..', 'public', 'images', this.data.image));
         }
         return await super.delete();
       } else {
